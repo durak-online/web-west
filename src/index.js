@@ -116,6 +116,20 @@ class Trasher extends Dog {
     }
 }
 
+class PseudoDuck extends Dog {
+    constructor() {
+        super('Псевдоутка', 3);
+    }
+
+    quacks() {
+        console.log('quack');
+    }
+
+    swims() {
+        console.log('float: both;');
+    }
+}
+
 
 const seriffStartDeck = [
     new Duck(),
@@ -125,6 +139,7 @@ const seriffStartDeck = [
 ];
 const banditStartDeck = [
     new Dog(),
+    new PseudoDuck(),
     new Dog(),
     new Trasher(),
 ];
