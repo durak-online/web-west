@@ -2,7 +2,6 @@ import Card from './Card.js';
 import Game from './Game.js';
 import TaskQueue from './TaskQueue.js';
 import SpeedRate from './SpeedRate.js';
-import card from "./Card.js";
 
 // Отвечает является ли карта уткой.
 function isDuck(card) {
@@ -46,7 +45,7 @@ class Creature extends Card {
 
 class Duck extends Creature {
     constructor() {
-		super('Мирная утка', 2);
+        super('Мирная утка', 2);
     }
 
     quacks() {
@@ -68,7 +67,7 @@ class Duck extends Creature {
 // }
 class Dog extends Creature {
     constructor() {
-		super('Пес-бандит', 3);
+        super('Пес-бандит', 3);
     }
 
     isDog() {
@@ -76,24 +75,39 @@ class Dog extends Creature {
     }
 }
 
+class Gatling extends Creature {
+    constructor() {
+        super('Гатлинг', 6);
+    }
 
-// Колода Шерифа, нижнего игрока.
-// const seriffStartDeck = [
-//     new Card('Мирный житель', 2),
-//     new Card('Мирный житель', 2),
-//     new Card('Мирный житель', 2),
-// ];
+    attack(gameContext, continuation) {
+        const taskQueue = new TaskQueue();
 
-// // Колода Бандита, верхнего игрока.
-// const banditStartDeck = [
-//     new Card('Бандит', 3),
-// ];
+        const {currentPlayer, oppositePlayer, position, updateView} = gameContext;
+
+        taskQueue.push(onDone => this.view.showAttack(onDone));
+        taskQueue.push(onDone => {
+            if (oppositePlayer.table.length > 0) {
+                for (const oppositeCard of oppositePlayer.table) {
+                    this.dealDamageToCreature(this.currentPower, oppositeCard, gameContext, onDone);
+                }
+            }
+        });
+
+        taskQueue.continueWith(continuation);
+    }
+}
+
+
 const seriffStartDeck = [
     new Duck(),
     new Duck(),
     new Duck(),
+    new Gatling(),
 ];
 const banditStartDeck = [
+    //new Trasher(),
+    new Dog(),
     new Dog(),
 ];
 
