@@ -46,7 +46,7 @@ class Creature extends Card {
 
 class Duck extends Creature {
     constructor() {
-		super('Мирная утка', 2);
+        super('Мирная утка', 2);
     }
 
     quacks() {
@@ -68,7 +68,7 @@ class Duck extends Creature {
 // }
 class Dog extends Creature {
     constructor() {
-		super('Пес-бандит', 3);
+        super('Пес-бандит', 3);
     }
 
     isDog() {
@@ -76,9 +76,34 @@ class Dog extends Creature {
     }
 }
 
+class Gatling extends Creature {
+    constructor() {
+        super('Гатлинг', 6);
+    }
+
+    attack(gameContext, continuation) {
+        const taskQueue = new TaskQueue();
+        const { oppositePlayer } = gameContext;
+        const oppoCards = oppositePlayer.table;
+
+        taskQueue.push(onDone => this.view.showAttack(onDone));
+
+        for (let pos = 0; pos < oppoCards.length; pos++) {
+            const card = oppoCards[pos];
+            if (card) {
+                taskQueue.push(onDone => {
+                    this.dealDamageToCreature(2, card, gameContext, onDone);
+                });
+            }
+        }
+
+        taskQueue.continueWith(continuation);
+    }
+}
+
 class Trasher extends Dog {
     constructor() {
-		super('Громила', 5);
+        super('Громила', 5);
     }
 
     modifyTakenDamage(value, fromCard, gameContext, continuation) {
@@ -144,18 +169,21 @@ class Lad extends Dog {
     }
 }
 
+class PseudoDuck extends Dog {
+    constructor() {
+        super('Псевдоутка', 3);
+    }
 
-// Колода Шерифа, нижнего игрока.
-// const seriffStartDeck = [
-//     new Card('Мирный житель', 2),
-//     new Card('Мирный житель', 2),
-//     new Card('Мирный житель', 2),
-// ];
+    quacks() {
+        console.log('quack');
+    }
 
-// // Колода Бандита, верхнего игрока.
-// const banditStartDeck = [
-//     new Card('Бандит', 3),
-// ];
+    swims() {
+        console.log('float: both;');
+    }
+}
+
+
 const seriffStartDeck = [
     new Duck(),
     new Duck(),
