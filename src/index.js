@@ -31,6 +31,15 @@ function getCreatureDescription(card) {
 class Creature extends Card {
     constructor(name, maxPower, image) {
         super(name, maxPower, image);
+        let _currentPower = this.currentPower;
+        Object.defineProperty(this, 'currentPower', {
+            get: function() { return _currentPower; },
+            set: function(value) {
+                _currentPower = Math.min(value, this.maxPower);
+            },
+            configurable: true,
+            enumerable: true
+        });
     }
 
     getDescriptions() {
@@ -133,10 +142,36 @@ class PseudoDuck extends Dog {
     }
 }
 
+class Brewer extends Duck {
+    constructor() {
+        super('Пивовар', 2);
+    }
+
+    doBeforeAttack(gameContext, continuation) {
+        const taskQueue = new TaskQueue();
+        const allCards = [
+            ...gameContext.currentPlayer.table,
+            ...gameContext.oppositePlayer.table
+        ];
+        const ducks = allCards.filter(card => card && isDuck(card));
+
+        for (const duck of ducks) {
+            taskQueue.push(onDone => {
+                duck.maxPower += 1;
+                duck.currentPower += 2;
+                duck.updateView();
+                duck.view.signalHeal(onDone);
+            });
+        }
+
+        taskQueue.continueWith(continuation);
+    }
+}
+
 
 const seriffStartDeck = [
     new Duck(),
-    new Duck(),
+    new Brewer(),
     new Duck(),
     new Gatling(),
 ];
