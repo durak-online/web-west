@@ -83,17 +83,20 @@ class Gatling extends Creature {
 
     attack(gameContext, continuation) {
         const taskQueue = new TaskQueue();
-
-        const {currentPlayer, oppositePlayer, position, updateView} = gameContext;
+        const { oppositePlayer } = gameContext;
+        const oppoCards = oppositePlayer.table;
 
         taskQueue.push(onDone => this.view.showAttack(onDone));
-        taskQueue.push(onDone => {
-            if (oppositePlayer.table.length > 0) {
-                for (const oppositeCard of oppositePlayer.table) {
-                    this.dealDamageToCreature(2, oppositeCard, gameContext, onDone);
-                }
+
+        for (let pos = 0; pos < oppoCards.length; pos++) {
+            const card = oppoCards[pos];
+            if (card) {
+                taskQueue.push(onDone => {
+                    this.dealDamageToCreature(2, card, gameContext, onDone);
+                });
             }
-        });
+        }
+
         taskQueue.continueWith(continuation);
     }
 }
