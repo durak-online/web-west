@@ -89,7 +89,57 @@ class Trasher extends Dog {
 
     getDescriptions() {
         const parentDescr = super.getDescriptions();
-        parentDescr.push('Получает на 1 меньше урона');
+        parentDescr.push('Громила: Получает на 1 меньше урона');
+        return parentDescr;
+    }
+}
+
+class Lad extends Dog {
+    constructor() {
+		super('Браток', 2);
+    }
+
+    static getInGameCount() { 
+        return this.inGameCount || 0; 
+    } 
+
+    static setInGameCount(value) { 
+        this.inGameCount = value; 
+    }
+
+    doAfterComingIntoPlay(gameContext, continuation) {
+        Lad.setInGameCount(Lad.getInGameCount() + 1);
+        super.doAfterComingIntoPlay(gameContext, continuation);
+    }
+
+    doBeforeRemoving(continuation) {
+        Lad.setInGameCount(Lad.getInGameCount() - 1);
+        super.doBeforeRemoving(continuation);
+    }
+
+    static getBonus() {
+        const cnt = this.getInGameCount();
+        return cnt * (cnt + 1) / 2
+    }
+
+    modifyDealedDamageToCreature(value, toCard, gameContext, continuation) {
+        this.view.signalAbility(() => {
+            continuation(value + Lad.getBonus());
+        });
+    }
+
+    modifyTakenDamage(value, fromCard, gameContext, continuation) {
+        this.view.signalAbility(() => {
+            continuation(Math.max(0, value - Lad.getBonus()));
+        });
+    };
+
+    getDescriptions() {
+        const parentDescr = super.getDescriptions();
+        if (Lad.prototype.hasOwnProperty('modifyDealedDamageToCreature') ||
+            Lad.prototype.hasOwnProperty('modifyTakenDamage')) {
+            parentDescr.push('Чем их больше, тем они сильнее');
+        }
         return parentDescr;
     }
 }
@@ -110,12 +160,11 @@ const seriffStartDeck = [
     new Duck(),
     new Duck(),
     new Duck(),
-    new Duck(),
 ];
 const banditStartDeck = [
-    new Trasher(),
+    new Lad(),
+    new Lad(),
 ];
-
 
 // Создание игры.
 const game = new Game(seriffStartDeck, banditStartDeck);
